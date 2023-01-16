@@ -1,3 +1,3 @@
-module github.com/yaroslavvasilenko/meme_store_models
+module github.com/yaroslavvasilenko/memodel
 
 go 1.19
