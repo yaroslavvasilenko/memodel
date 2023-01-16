@@ -1,10 +1,11 @@
 package meme_store_models
 
 import (
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"os"
 	"path"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 const (
@@ -24,13 +25,13 @@ type File struct {
 	ID       string `gorm:"primaryKey"`
 	Name     string
 	Size     int
-	IdUser   int
+	IdUser   int64
 	TypeFile int
 	MimeType string
 }
 
 type User struct {
-	ID        int `gorm:"primaryKey"`
+	ID        int64 `gorm:"primaryKey"`
 	SizeStore int
 }
 
@@ -52,7 +53,7 @@ func PostgresInit(urlPostgres string) (*DB, error) {
 
 // Переделать на методы для DB
 
-func (db *DB) FindFile(nameFile string, idUser int) (*File, error) {
+func (db *DB) FindFile(nameFile string, idUser int64) (*File, error) {
 	var result File
 	tx := db.Postgres.Raw(
 		`SELECT id, name, size, id_user, type_file, mime_type
@@ -80,7 +81,7 @@ func (db *DB) DeleteDB(f *File) error {
 	return nil
 }
 
-func (db *DB) DeleteFile(name string, idUser int) error {
+func (db *DB) DeleteFile(name string, idUser int64) error {
 	fileFinding, err := db.FindFile(name, idUser)
 	if err != nil {
 		return err
@@ -132,14 +133,14 @@ func (db *DB) CreateUser(f *File) error {
 	return nil
 }
 
-func (db *DB) AllFileUser(idUser int) []File {
+func (db *DB) AllFileUser(idUser int64) []File {
 	var files []File
 	db.Postgres.Where(&File{IdUser: idUser}).Find(&files)
 	return files
 
 }
 
-func (db *DB) ExecUser(userID int) bool {
+func (db *DB) ExecUser(userID int64) bool {
 	user := User{ID: userID}
 	tx := db.Postgres.First(&user)
 	if tx.RowsAffected != 1 {
