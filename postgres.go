@@ -22,12 +22,13 @@ const (
 )
 
 type File struct {
-	ID       string `gorm:"primaryKey"`
-	Name     string
-	Size     int
-	IdUser   int64
-	TypeFile int
-	MimeType string
+	ID        string `gorm:"primaryKey"`
+	Name      string
+	Size      int
+	IdUser    int64
+	TypeFile  int
+	MimeType  string
+	MessageID int
 }
 
 type User struct {
@@ -56,7 +57,7 @@ func PostgresInit(urlPostgres string) (*DB, error) {
 func (db *DB) FindFile(nameFile string, idUser int64) (*File, error) {
 	var result File
 	tx := db.Postgres.Raw(
-		`SELECT id, name, size, id_user, type_file, mime_type
+		`SELECT id, name, size, id_user, type_file, mime_type, message_id
 			 FROM files
 			 WHERE id_user = ? and name = ?`, idUser, nameFile).Scan(&result)
 	if tx.Error != nil {
@@ -175,6 +176,22 @@ func (db *DB) AllDelete() error {
 	}
 	for _, d := range dir {
 		os.RemoveAll(path.Join([]string{FilePath, d.Name()}...))
+	}
+
+	return nil
+}
+
+func (db *DB) RenameFile(f *File) error {
+	tx := db.Postgres.Delete(f)
+	if tx.Error != nil {
+		return tx.Error
+	}
+	tx = db.Postgres.Exec(
+		`UPDATE files 
+			SET name =  - ? 
+			WHERE id = ?`, f.Name, f.IdUser)
+	if tx.Error != nil {
+		return tx.Error
 	}
 
 	return nil
